@@ -1,8 +1,4 @@
-function requireUncached(module){
-  delete require.cache[require.resolve(module)]
-  return require(module)
-}
-var Promise = requireUncached('../lib/build/main.js');
+var Promise = require('../lib/build/main.js');
 
 function GenPromise(time){
   return new Promise(function(resolve){setTimeout(resolve,time);});
