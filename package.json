@@ -1,6 +1,6 @@
 {
   "name": "a-promise",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "A lightweight Promise-like implementation for NodeJS",
   "main": "lib/build/main.js",
   "scripts": {
