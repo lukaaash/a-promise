@@ -11,4 +11,6 @@ Promise.all([
   GenPromise(2000),GenPromise(2000),GenPromise(2000),GenPromise(2000),GenPromise(2000),
   GenPromise(3000),GenPromise(3000),GenPromise(3000),GenPromise(3000),GenPromise(3000)]).then(function(){
   console.timeEnd("Time");
+}).catch(function(){
+  console.log("Error somewhere");
 });
