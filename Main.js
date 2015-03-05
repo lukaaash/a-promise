@@ -68,9 +68,13 @@ class Promise{
     var args = arguments;
     this.Result = args;
     this.Status = 2;
-    this.OnError.forEach(function(c:Function){
-      c.apply(null,args);
-    });
+    if(this.OnError.length){
+      this.OnError.forEach(function(c:Function){
+        c.apply(null,args);
+      });
+    } else {
+      throw new Error("Uncaught Promise Rejection");
+    }
   }
   static resolve(LeArgs):Promise{
     return new Promise(function(resolve){
