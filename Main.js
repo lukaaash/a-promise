@@ -1,38 +1,28 @@
 
 
-// @Compiler-Output "Build/Main.js"
+// @Compiler-Output "Built/Main.js"
 // @Compiler-Compress "true"
 class Promise{
   OnSuccess:Array;
   OnError:Array;
   Status:Number;
   Result:Array;
-  constructor(callback:Function, async:Boolean = true){
-    if(this === 'undefined'){
-      throw new Error("No direct access, must be initialized like a class");
-    }
+  constructor(Callback:Function, async:Boolean = true){
     this.OnSuccess = [];
     this.OnError = [];
     this.Result = [];
     this.Status = 0;
-    if(typeof callback === 'function'){
+    if(typeof Callback !== 'function'){
+      return ;
+    }
+    try {
       if(async){
-        setTimeout(function(){
-          try {
-            callback(this.resolve.bind(this),this.reject.bind(this));
-          } catch(error){
-            console.error(error);
-            this.reject(error);
-          }
-        }.bind(this),5); // An async like behaviour
+        setTimeout(Callback.call(this,this.resolve.bind(this),this.reject.bind(this)),0);
       } else {
-        try {
-          callback(this.resolve.bind(this),this.reject.bind(this));
-        } catch(error){
-          console.error(error);
-          this.reject(error);
-        }
+        Callback.call(this,this.resolve.bind(this),this.reject.bind(this));
       }
+    } catch(Err){
+      this.reject(Err);
     }
   }
   then(OnSuccess,OnFailure):Promise{
