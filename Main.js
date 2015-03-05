@@ -1,5 +1,7 @@
 
 
+// @Compiler-Output "Build/Main.js"
+// @Compiler-Compress "true"
 class Promise{
   OnSuccess:Array;
   OnError:Array;
