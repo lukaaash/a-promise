@@ -1,0 +1,31 @@
+{
+  "Name": "DeProc",
+  "Items": {
+    "Info": {
+      "Main.js": {
+        "Path": "Main.js",
+        "Name": "Main.js",
+        "Ext": "JS",
+        "Config": {
+          "Compress": false,
+          "Compiler": "Babel",
+          "SourceMap": null,
+          "IncludedIn": [],
+          "Watch": true,
+          "Output": "test-dist.js"
+        },
+        "Type": "JS"
+      }
+    },
+    "Tree": {
+      "Dirs": {},
+      "Files": [
+        "Main.js",
+        "README.md",
+        "package.json",
+        "test.js"
+      ]
+    }
+  },
+  "Version": "0.0.1"
+}
