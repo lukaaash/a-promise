@@ -1,5 +1,5 @@
 {
-  "Name": "DeProc",
+  "Name": "a-promise",
   "Items": {
     "Info": {
       "Main.js": {
@@ -7,12 +7,12 @@
         "Name": "Main.js",
         "Ext": "JS",
         "Config": {
-          "Compress": false,
+          "Compress": true,
           "Compiler": "Babel",
           "SourceMap": null,
           "IncludedIn": [],
           "Watch": true,
-          "Output": "test-dist.js"
+          "Output": "Built/Main.js"
         },
         "Type": "JS"
       }
