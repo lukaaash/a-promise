@@ -6,42 +6,35 @@ var _classCallCheck = function (instance, Constructor) { if (!(instance instance
 
 var Promise = (function () {
   function Promise(Callback) {
-    var async = arguments[1] === undefined ? true : arguments[1];
+    this.OnError = [];
+    this.OnSuccess = [];
+    this.State = Promise.State.PENDING;
 
     _classCallCheck(this, Promise);
 
-    this.OnSuccess = [];
-    this.OnError = [];
-    this.Result = [];
-    this.Status = 0;
-    if (typeof Callback !== "function") {
-      return;
-    }
-    try {
-      if (async) {
-        setTimeout(Callback.call(this, this.resolve.bind(this), this.reject.bind(this)), 0);
-      } else {
-        Callback.call(this, this.resolve.bind(this), this.reject.bind(this));
-      }
-    } catch (Err) {
-      this.reject(Err);
+    if (typeof Callback == "function") {
+      setTimeout((function () {
+        Callback.call(null, this.resolve.bind(this), this.reject.bind(this));
+      }).bind(this), 10);
     }
   }
 
+  Promise.State = { PENDING: 0, FAILURE: 2, SUCCESS: 1 };
+
   _prototypeProperties(Promise, {
     resolve: {
-      value: function resolve(LeArgs) {
+      value: function resolve(Result) {
         return new Promise(function (resolve) {
-          resolve(LeArgs);
+          resolve(Result);
         });
       },
       writable: true,
       configurable: true
     },
     reject: {
-      value: function reject(LeArgs) {
+      value: function reject(Result) {
         return new Promise(function (resolve, reject) {
-          reject(LeArgs);
+          reject(Result);
         });
       },
       writable: true,
@@ -51,101 +44,96 @@ var Promise = (function () {
       value: function all(Promises) {
         return new Promise(function (resolve, reject) {
           var ValidPromises = [],
-              Results = [],
-              Finished = false;
-          Promises.forEach(function (Entry) {
-            var ResultIndex;
-            if (Entry instanceof Promise) {
-              ValidPromises.push(Entry);
-              ResultIndex = ValidPromises.indexOf(Entry);
-              Results.push(null);
-              Entry.then(function (Result) {
-                Results[ResultIndex] = Result;
-                ValidPromises.splice(ValidPromises.indexOf(Entry), 1);
-                if (ValidPromises.length === 0 && !Finished) {
-                  Finished = true;
-                  resolve(Results);
-                }
-              })["catch"](function (error) {
-                if (!Finished) {
-                  Finished = true;
-                  reject(error);
-                }
-              });
+              Status = Promise.State.PENDING,
+              ProcessedPromises = 0,
+              Results = [];
+          Promises.forEach(function (PromiseInst) {
+            if (PromiseInst instanceof Promise) {
+              ValidPromises.push(PromiseInst);
             }
           });
           if (!ValidPromises.length) {
-            resolve();
+            return resolve(Results);
           }
+          ValidPromises.forEach(function (PromiseInst, Index) {
+            PromiseInst.then(function (Result) {
+              ProcessedPromises++;
+              Results[Index] = Result;
+              if (ProcessedPromises === ValidPromises.length) {
+                resolve(Results);
+              }
+            }, function (Error) {
+              Status = Promise.State.FAILURE;
+              reject(Error);
+            });
+          });
         });
       },
       writable: true,
       configurable: true
     }
   }, {
-    then: {
-      value: function then(OnSuccess, OnFailure) {
-        return new Promise((function (resolve) {
-          if (typeof OnSuccess === "function") {
-            var LeSuccess = function LeSuccess() {
-              var LeResult = OnSuccess.apply(null, arguments);
-              if (LeResult instanceof Promise) {
-                LeResult.then(resolve);
-              } else {
-                resolve.apply(null, arguments);
-              }
-            };
-            if (this.Status === 1) {
-              LeSuccess.apply(null, this.Result);
-            } else if (this.Status === 0) {
-              this.OnSuccess.push(LeSuccess);
-            }
-          }
-          if (typeof OnFailure === "function") {
-            this["catch"](OnFailure);
-          }
-        }).bind(this));
-      },
-      writable: true,
-      configurable: true
-    },
-    "catch": {
-      value: function _catch(OnFailure) {
-        if (typeof OnFailure === "function") {
-          if (this.Status === 2) {
-            OnFailure.apply(null, this.Result);
-          } else if (this.Status === 0) {
-            this.OnError.push(OnFailure);
-          }
-        }
-      },
-      writable: true,
-      configurable: true
-    },
     resolve: {
-      value: function resolve() {
-        this.Status = 1;
-        var args = arguments;
-        this.Result = args;
-        this.OnSuccess.forEach(function (c) {
-          c.apply(null, args);
+      value: function resolve(Result) {
+        if (this.State !== Promise.State.PENDING) {
+          return;
+        }
+        this.State = Promise.State.SUCCESS;
+        this.Result = Result;
+        this.OnSuccess.forEach(function (Callback) {
+          Callback(Result);
         });
       },
       writable: true,
       configurable: true
     },
     reject: {
-      value: function reject() {
-        var args = arguments;
-        this.Result = args;
-        this.Status = 2;
+      value: function reject(ErrorMessage) {
+        if (this.State !== Promise.State.PENDING) {
+          return;
+        }
+        this.State = Promise.State.FAILURE;
+        this.Result = ErrorMessage;
         if (this.OnError.length) {
-          this.OnError.forEach(function (c) {
-            c.apply(null, args);
+          this.OnError.forEach(function (Callback) {
+            Callback(ErrorMessage);
           });
         } else {
-          throw new Error("Uncaught Promise Rejection");
+          throw new Error("Uncaught Promise Rejection", ErrorMessage);
         }
+      },
+      writable: true,
+      configurable: true
+    },
+    "catch": {
+      value: function _catch(Callback) {
+        if (typeof Callback !== "function") {
+          throw new Error("Callback for Promise.catch should be a function");
+        }
+        if (this.State === Promise.State.PENDING) {
+          this.OnError.push(Callback);
+        } else if (this.State === Promise.State.FAILURE) {
+          Callback(this.Result);
+        }
+        return this;
+      },
+      writable: true,
+      configurable: true
+    },
+    then: {
+      value: function then(Callback, OnError) {
+        if (typeof Callback !== "function" || OnError && typeof OnError !== "function") {
+          throw new Error("Callback(s) for Promise.then should be a function");
+        }
+        if (this.State === Promise.State.PENDING) {
+          this.OnSuccess.push(Callback);
+        } else if (this.State === Promise.State.SUCCESS) {
+          Callback(this.Result);
+        }
+        if (OnError) {
+          this["catch"](OnError);
+        }
+        return this;
       },
       writable: true,
       configurable: true
