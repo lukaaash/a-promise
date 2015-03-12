@@ -4,6 +4,7 @@
 // @Compiler-Transpile "true"
 class Promise{
   static State = {PENDING: 0, FAILURE: 2, SUCCESS: 1};
+  static ThrowErrors:Boolean = false;
   Result:Object;
   State:Number = Promise.State.PENDING;
   OnSuccess:Array = [];
@@ -36,7 +37,9 @@ class Promise{
         Callback(ErrorMessage);
       });
     } else {
-      throw new Error("Uncaught Promise Rejection",ErrorMessage);
+      if(Promise.ThrowErrors){
+        throw new Error("Uncaught Promise Rejection",ErrorMessage);
+      }
     }
   }
   catch(Callback:Function):Promise{

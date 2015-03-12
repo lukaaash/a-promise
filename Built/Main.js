@@ -20,6 +20,7 @@ var Promise = (function () {
   }
 
   Promise.State = { PENDING: 0, FAILURE: 2, SUCCESS: 1 };
+  Promise.ThrowErrors = false;
 
   _prototypeProperties(Promise, {
     resolve: {
@@ -99,7 +100,9 @@ var Promise = (function () {
             Callback(ErrorMessage);
           });
         } else {
-          throw new Error("Uncaught Promise Rejection", ErrorMessage);
+          if (Promise.ThrowErrors) {
+            throw new Error("Uncaught Promise Rejection", ErrorMessage);
+          }
         }
       },
       writable: true,
