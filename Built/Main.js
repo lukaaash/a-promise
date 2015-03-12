@@ -1,1 +1,158 @@
-"use strict";var _prototypeProperties=function(t,n,e){n&&Object.defineProperties(t,n),e&&Object.defineProperties(t.prototype,e)},_classCallCheck=function(t,n){if(!(t instanceof n))throw new TypeError("Cannot call a class as a function")},Promise=function(){function t(n){var e=void 0===arguments[1]?!0:arguments[1];if(_classCallCheck(this,t),this.OnSuccess=[],this.OnError=[],this.Result=[],this.Status=0,"function"==typeof n)try{e?setTimeout(n.call(this,this.resolve.bind(this),this.reject.bind(this)),0):n.call(this,this.resolve.bind(this),this.reject.bind(this))}catch(i){this.reject(i)}}return _prototypeProperties(t,{resolve:{value:function(n){return new t(function(t){t(n)})},writable:!0,configurable:!0},reject:{value:function(n){return new t(function(t,e){e(n)})},writable:!0,configurable:!0},all:{value:function(n){return new t(function(e,i){var r=[],s=[],u=!1;n.forEach(function(n){var o;n instanceof t&&(r.push(n),o=r.indexOf(n),s.push(null),n.then(function(t){s[o]=t,r.splice(r.indexOf(n),1),0!==r.length||u||(u=!0,e(s))})["catch"](function(t){u||(u=!0,i(t))}))}),r.length||e()})},writable:!0,configurable:!0}},{then:{value:function(n,e){return new t(function(i){if("function"==typeof n){var r=function(){var e=n.apply(null,arguments);e instanceof t?e.then(i):i.apply(null,arguments)};1===this.Status?r.apply(null,this.Result):0===this.Status&&this.OnSuccess.push(r)}"function"==typeof e&&this["catch"](e)}.bind(this))},writable:!0,configurable:!0},"catch":{value:function(t){"function"==typeof t&&(2===this.Status?t.apply(null,this.Result):0===this.Status&&this.OnError.push(t))},writable:!0,configurable:!0},resolve:{value:function(){this.Status=1;var t=arguments;this.Result=t,this.OnSuccess.forEach(function(n){n.apply(null,t)})},writable:!0,configurable:!0},reject:{value:function(){var t=arguments;if(this.Result=t,this.Status=2,!this.OnError.length)throw new Error("Uncaught Promise Rejection");this.OnError.forEach(function(n){n.apply(null,t)})},writable:!0,configurable:!0}}),t}();module.exports=Promise;
+"use strict";
+
+var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
+
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+
+var Promise = (function () {
+  function Promise(Callback) {
+    var async = arguments[1] === undefined ? true : arguments[1];
+
+    _classCallCheck(this, Promise);
+
+    this.OnSuccess = [];
+    this.OnError = [];
+    this.Result = [];
+    this.Status = 0;
+    if (typeof Callback !== "function") {
+      return;
+    }
+    try {
+      if (async) {
+        setTimeout(Callback.call(this, this.resolve.bind(this), this.reject.bind(this)), 0);
+      } else {
+        Callback.call(this, this.resolve.bind(this), this.reject.bind(this));
+      }
+    } catch (Err) {
+      this.reject(Err);
+    }
+  }
+
+  _prototypeProperties(Promise, {
+    resolve: {
+      value: function resolve(LeArgs) {
+        return new Promise(function (resolve) {
+          resolve(LeArgs);
+        });
+      },
+      writable: true,
+      configurable: true
+    },
+    reject: {
+      value: function reject(LeArgs) {
+        return new Promise(function (resolve, reject) {
+          reject(LeArgs);
+        });
+      },
+      writable: true,
+      configurable: true
+    },
+    all: {
+      value: function all(Promises) {
+        return new Promise(function (resolve, reject) {
+          var ValidPromises = [],
+              Results = [],
+              Finished = false;
+          Promises.forEach(function (Entry) {
+            var ResultIndex;
+            if (Entry instanceof Promise) {
+              ValidPromises.push(Entry);
+              ResultIndex = ValidPromises.indexOf(Entry);
+              Results.push(null);
+              Entry.then(function (Result) {
+                Results[ResultIndex] = Result;
+                ValidPromises.splice(ValidPromises.indexOf(Entry), 1);
+                if (ValidPromises.length === 0 && !Finished) {
+                  Finished = true;
+                  resolve(Results);
+                }
+              })["catch"](function (error) {
+                if (!Finished) {
+                  Finished = true;
+                  reject(error);
+                }
+              });
+            }
+          });
+          if (!ValidPromises.length) {
+            resolve();
+          }
+        });
+      },
+      writable: true,
+      configurable: true
+    }
+  }, {
+    then: {
+      value: function then(OnSuccess, OnFailure) {
+        return new Promise((function (resolve) {
+          if (typeof OnSuccess === "function") {
+            var LeSuccess = function LeSuccess() {
+              var LeResult = OnSuccess.apply(null, arguments);
+              if (LeResult instanceof Promise) {
+                LeResult.then(resolve);
+              } else {
+                resolve.apply(null, arguments);
+              }
+            };
+            if (this.Status === 1) {
+              LeSuccess.apply(null, this.Result);
+            } else if (this.Status === 0) {
+              this.OnSuccess.push(LeSuccess);
+            }
+          }
+          if (typeof OnFailure === "function") {
+            this["catch"](OnFailure);
+          }
+        }).bind(this));
+      },
+      writable: true,
+      configurable: true
+    },
+    "catch": {
+      value: function _catch(OnFailure) {
+        if (typeof OnFailure === "function") {
+          if (this.Status === 2) {
+            OnFailure.apply(null, this.Result);
+          } else if (this.Status === 0) {
+            this.OnError.push(OnFailure);
+          }
+        }
+      },
+      writable: true,
+      configurable: true
+    },
+    resolve: {
+      value: function resolve() {
+        this.Status = 1;
+        var args = arguments;
+        this.Result = args;
+        this.OnSuccess.forEach(function (c) {
+          c.apply(null, args);
+        });
+      },
+      writable: true,
+      configurable: true
+    },
+    reject: {
+      value: function reject() {
+        var args = arguments;
+        this.Result = args;
+        this.Status = 2;
+        if (this.OnError.length) {
+          this.OnError.forEach(function (c) {
+            c.apply(null, args);
+          });
+        } else {
+          throw new Error("Uncaught Promise Rejection");
+        }
+      },
+      writable: true,
+      configurable: true
+    }
+  });
+
+  return Promise;
+})();
+
+module.exports = Promise;

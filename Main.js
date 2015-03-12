@@ -1,7 +1,6 @@
 
 
 // @Compiler-Output "Built/Main.js"
-// @Compiler-Compress "true"
 // @Compiler-Transpile "true"
 class Promise{
   OnSuccess:Array;
