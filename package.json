@@ -1,7 +1,7 @@
 {
   "name": "a-promise",
   "version": "0.0.13",
-  "description": "A lightweight Promise-like implementation for NodeJS",
+  "description": "A lightweight Promise implementation in NodeJS",
   "main": "Built/Main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -25,5 +25,8 @@
   "bugs": {
     "url": "https://github.com/steelbrain/a-promise/issues"
   },
-  "homepage": "https://github.com/steelbrain/a-promise"
+  "homepage": "https://github.com/steelbrain/a-promise",
+  "scripts":{
+    "prepublish": "mkdir -p Dist; uc-compile Source/Promise.js"
+  }
 }

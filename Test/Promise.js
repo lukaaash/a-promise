@@ -1,5 +1,5 @@
 var
-  Promise = require('../Built/Main.js'),
+  Promise = require('../Dist/Promise.js'),
   assert = require('assert');
 describe('Promise', function(){
   describe('Promise.prototype.resolve | Promise.prototype.then', function(){
