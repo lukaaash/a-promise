@@ -20,21 +20,18 @@ class Promise{
   }
   resolve(Value){
     let Me = this;
-    function PromiseCommenceResolve(){
+    if(Value && Value.then){
+      if(Value === this){
+        throw new TypeError("You can not return self from Resolve");
+      }
+    }
+    (Value && Value.then || setImmediate)(function(){
       if(Me.State === Promise.State.Pending){
         Me.Result = Value;
         Me.State = Promise.State.Success;
         if(Me.OnSuccess.length) Me.OnSuccess.forEach(function(OnSuccess){ OnSuccess(Value) });
       }
-    }
-    if(Value && Value.then){
-      if(Value === this){
-        throw new TypeError("You can not return self from Resolve");
-      }
-      Value.then(PromiseCommenceResolve, PromiseCommenceResolve);
-    } else {
-      setImmediate(PromiseCommenceResolve);
-    }
+    });
   }
   reject(Value){
     let Me = this;
