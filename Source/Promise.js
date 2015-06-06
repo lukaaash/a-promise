@@ -58,27 +58,26 @@ class Promise{
     }
   }
   then(CallbackSuccess, CallbackError){
-    let Me = this;
-    return new Promise(function(Resolve, Reject){
-      Me.onSuccess(function(Value){
-        if(typeof CallbackSuccess === 'function'){
-          try {
-            Resolve(CallbackSuccess(Value));
-          } catch(err){
-            Reject(err)
-          }
-        } else Resolve(Value)
-      });
-      Me.onError(function(Value){
-        if(typeof CallbackError === 'function'){
-          try {
-            Resolve(CallbackError(Value));
-          } catch(err){
-            Reject(err);
-          }
-        } else Reject(Value);
-      });
-    });
+    let Inst = new Promise(function(){});
+    this.OnSuccess = function(Value){
+      if(typeof CallbackSuccess === 'function'){
+        try {
+          Inst.resolve(CallbackSuccess(Value));
+        } catch(err){
+          Inst.reject(err)
+        }
+      } else Inst.resolve(Value)
+    };
+    this.OnError = function(Value){
+      if(typeof CallbackError === 'function'){
+        try {
+          Inst.resolve(CallbackError(Value));
+        } catch(err){
+          Inst.reject(err);
+        }
+      } else Inst.reject(Value);
+    };
+    return Inst;
   }
   catch(CallbackError){
     if(typeof CallbackError !== 'function') throw new Error("Promise.catch expects first parameter to be a function");
