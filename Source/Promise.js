@@ -14,10 +14,10 @@ class Promise{
     });
   }
   resolve(){
-    console.log(this);
+    
   }
   reject(){
-    console.log(this);
+
   }
   static defer(){
     let Inst = new Promise(function(){});
