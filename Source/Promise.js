@@ -36,7 +36,7 @@ class Promise{
     }
   }
   then(CallbackSuccess, CallbackError){
-    Assert(typeof CallbackSuccess === 'function', "Promise.then expects first parameter to be a function");
+    var CallbackSuccessValid = typeof CallbackSuccess === 'function';
     if(CallbackError){
       Assert(typeof CallbackError === 'function', "Promise.then expects second parameter to be a function");
     }
@@ -48,16 +48,16 @@ class Promise{
         } catch(err){
           Inst.reject(err);
         }
-      } else {
-        Inst.reject(Value);
-      }
+      } Inst.reject(Value);
     };
     this.OnSuccess = function(Value){
-      try {
-        Inst.resolve(CallbackSuccess(Value));
-      } catch(err){
-        Inst.reject(err);
-      }
+      if(CallbackSuccessValid){
+        try {
+          Inst.resolve(CallbackSuccess(Value));
+        } catch(err){
+          Inst.reject(err);
+        }
+      } else Inst.resolve(Value);
     };
     return Inst.promise;
   }
