@@ -6,18 +6,63 @@
 let Assert = require('assert');
 class Promise{
   constructor(Callback){
+    this.OnError = null;
+    this.OnSuccess = null;
     this.State = Promise.State.Pending;
-    Assert(Callback.constructor.name === 'Function', "The Promise constructor requires a callback function");
+    Assert(typeof Callback === 'function', "The Promise constructor requires a callback function");
     let Me = this;
     process.nextTick(function(){
-      Callback.call(Me.resolve.bind(Me), Me.reject.bind(Me));
+      try {
+        Callback.call(Me.resolve.bind(Me), Me.reject.bind(Me));
+      } catch(err){
+        Me.reject(err);
+      }
     });
   }
-  resolve(){
-    
+  resolve(Value){
+    if(this.State === Promise.State.Pending){
+      this.State = Promise.State.Success;
+      if(this.OnSuccess) this.OnSuccess(Value);
+    }
   }
-  reject(){
-
+  reject(Value){
+    if(this.State === Promise.State.Pending){
+      this.State = Promise.State.Failure;
+      if(this.OnError){
+        this.OnError(Value);
+      } else {
+        throw new Error("Uncaught Promise Rejection", Value);
+      }
+    }
+  }
+  then(CallbackSuccess, CallbackError){
+    Assert(typeof CallbackSuccess === 'function', "Promise.then expects first parameter to be a function");
+    if(CallbackError){
+      Assert(typeof CallbackError === 'function', "Promise.then expects second parameter to be a function");
+    }
+    let Inst = Promise.defer();
+    this.OnError = function(Value){
+      if(CallbackError){
+        Inst.resolve(CallbackError(Value));
+      } else {
+        Inst.reject(Value);
+      }
+    };
+    this.OnSuccess = function(Value){
+      Inst.resolve(CallbackSuccess(Value));
+    };
+    return Inst.promise;
+  }
+  catch(CallbackError){
+    Assert(typeof CallbackError === 'function', "Promise.catch expects first parameter to be a function");
+    let Inst = Promise.defer();
+    this.OnSuccess = function(Value){
+      Inst.resolve(Value);
+    };
+    this.OnError = function(Value){
+      Inst.resolve(CallbackError(Value));
+    };
+    return Inst.promise;
   }
   static defer(){
     let Inst = new Promise(function(){});
@@ -35,5 +80,4 @@ class Promise{
   }
 }
 Promise.State = {Pending: 0, Success: 1, Failure: 2};
-Promise.defer().resolve();
 module.exports = Promise;
