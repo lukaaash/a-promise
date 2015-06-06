@@ -36,13 +36,11 @@ class Promise{
     }
   }
   then(CallbackSuccess, CallbackError){
-    var CallbackSuccessValid = typeof CallbackSuccess === 'function';
-    if(CallbackError){
-      Assert(typeof CallbackError === 'function', "Promise.then expects second parameter to be a function");
-    }
+    let CallbackSuccessValid = typeof CallbackSuccess === 'function';
+    let CallbackErrorValid = typeof CallbackError === 'function';
     let Inst = Promise.defer();
     this.OnError = function(Value){
-      if(CallbackError){
+      if(CallbackErrorValid){
         try {
           Inst.resolve(CallbackError(Value));
         } catch(err){
@@ -57,7 +55,7 @@ class Promise{
         } catch(err){
           Inst.reject(err);
         }
-      } else Inst.resolve(Value);
+      } else Inst.resolve(CallbackSuccess);
     };
     return Inst.promise;
   }
