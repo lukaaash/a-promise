@@ -20,20 +20,26 @@ class Promise{
     });
   }
   resolve(Value){
-    if(this.State === Promise.State.Pending){
-      this.State = Promise.State.Success;
-      if(this.OnSuccess) this.OnSuccess(Value);
-    }
+    let Me = this;
+    process.nextTick(function(){
+      if(Me.State === Promise.State.Pending){
+        Me.State = Promise.State.Success;
+        if(Me.OnSuccess) Me.OnSuccess(Value);
+      }
+    });
   }
   reject(Value){
-    if(this.State === Promise.State.Pending){
-      this.State = Promise.State.Failure;
-      if(this.OnError){
-        this.OnError(Value);
-      } else {
-        throw new Error("Uncaught Promise Rejection", Value);
+    let Me = this;
+    process.nextTick(function() {
+      if (Me.State === Promise.State.Pending) {
+        Me.State = Promise.State.Failure;
+        if (Me.OnError) {
+          Me.OnError(Value);
+        } else {
+          throw new Error("Uncaught Promise Rejection", Value);
+        }
       }
-    }
+    });
   }
   then(CallbackSuccess, CallbackError){
     let CallbackSuccessValid = typeof CallbackSuccess === 'function';
@@ -72,7 +78,15 @@ class Promise{
   }
   static defer(){
     let Inst = new Promise(function(){});
-    return {promise: Inst, reject: Inst.reject.bind(Inst), resolve: Inst.resolve.bind(Inst)};
+    return {
+      promise: Inst,
+      reject: function(Value){
+        Inst.reject(Value);
+      },
+      resolve: function(Value){
+        Inst.resolve(Value);
+      }
+    };
   }
   static resolve(Value){
     return new Promise(function(Resolve){
