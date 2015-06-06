@@ -13,7 +13,7 @@ class Promise{
     let Me = this;
     process.nextTick(function(){
       try {
-        Callback.call(Me.resolve.bind(Me), Me.reject.bind(Me));
+        Callback(Me.resolve.bind(Me), Me.reject.bind(Me));
       } catch(err){
         Me.reject(err);
       }
