@@ -28,6 +28,9 @@ class Promise{
       }
     }
     if(Value && Value.constructor && Value.constructor.name === 'Promise'){
+      if(Value === this){
+        throw new TypeError("You can not return self from Resolve");
+      }
       Value.then(function(Value){
         Me.Result = Value;
         PromiseCommenceResolve(Value);
@@ -50,6 +53,9 @@ class Promise{
       }
     }
     if(Value && Value.constructor && Value.constructor.name === 'Promise'){
+      if(Value === this){
+        throw new TypeError("You can not return self from Reject");
+      }
       Value.then(function(Value){
         Me.Result = Value;
         PromiseCommenceReject(Value);
