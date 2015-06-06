@@ -82,23 +82,13 @@ class Promise{
   }
   catch(CallbackError){
     if(typeof CallbackError !== 'function') throw new Error("Promise.catch expects first parameter to be a function");
-    let Inst = Promise.defer();
     let Me = this;
-    if(this.State === Promise.State.Pending){
-      this.OnSuccess.push(function(Value){
-        Me.Result = Value;
-        Inst.resolve(Value);
+    return new Promise(function(Resolve, Reject){
+      Me.onSuccess(Resolve);
+      Me.onError(function(Value){
+        Resolve(CallbackError(Value));
       });
-      this.OnError.push(function(Value){
-        Me.Result = Value;
-        Inst.resolve(CallbackError(Value));
-      });
-    } else if(this.State === Promise.State.Success) {
-      Inst.resolve(Me.Result);
-    } else if(this.State == Promise.State.Failure){
-      Inst.reject(Me.Result);
-    }
-    return Inst.promise;
+    });
   }
   static defer(){
     let Inst = new Promise(function(){});
