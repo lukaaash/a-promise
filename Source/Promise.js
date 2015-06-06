@@ -105,12 +105,21 @@ class Promise{
   catch(CallbackError){
     Assert(typeof CallbackError === 'function', "Promise.catch expects first parameter to be a function");
     let Inst = Promise.defer();
-    this.OnSuccess.push(function(Value){
-      Inst.resolve(Value);
-    });
-    this.OnError.push(function(Value){
-      Inst.resolve(CallbackError(Value));
-    });
+    let Me = this;
+    if(this.State === Promise.State.Pending){
+      this.OnSuccess.push(function(Value){
+        Me.Result = Value;
+        Inst.resolve(Value);
+      });
+      this.OnError.push(function(Value){
+        Me.Result = Value;
+        Inst.resolve(CallbackError(Value));
+      });
+    } else if(this.State === Promise.State.Success) {
+      Inst.resolve(Me.Result);
+    } else if(this.State == Promise.State.Failure){
+      Inst.reject(Me.Result);
+    }
     return Inst.promise;
   }
   static defer(){
