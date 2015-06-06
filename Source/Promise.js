@@ -23,6 +23,7 @@ class Promise{
     let Me = this;
     function PromiseCommenceResolve(){
       if(Me.State === Promise.State.Pending){
+        Me.Result = Value;
         Me.State = Promise.State.Success;
         if(Me.OnSuccess.length) Me.OnSuccess.forEach(function(OnSuccess){ OnSuccess(Value) });
       }
@@ -31,12 +32,8 @@ class Promise{
       if(Value === this){
         throw new TypeError("You can not return self from Resolve");
       }
-      Value.then(function(Value){
-        Me.Result = Value;
-        PromiseCommenceResolve(Value);
-      });
+      Value.then(PromiseCommenceResolve, PromiseCommenceResolve);
     } else {
-      Me.Result  = Value;
       setImmediate(PromiseCommenceResolve);
     }
   }
@@ -44,6 +41,7 @@ class Promise{
     let Me = this;
     function PromiseCommenceReject() {
       if (Me.State === Promise.State.Pending) {
+        Me.Result = Value;
         Me.State = Promise.State.Failure;
         if (Me.OnError.length) {
           Me.OnError.forEach(function(OnError){ OnError(Value) });
@@ -56,12 +54,8 @@ class Promise{
       if(Value === this){
         throw new TypeError("You can not return self from Reject");
       }
-      Value.then(function(Value){
-        Me.Result = Value;
-        PromiseCommenceReject(Value);
-      });
+      Value.then(PromiseCommenceReject);
     } else {
-      Me.Result  = Value;
       setImmediate(PromiseCommenceReject);
     }
   }
@@ -70,15 +64,6 @@ class Promise{
     let CallbackErrorValid = typeof CallbackError === 'function';
     let Inst = Promise.defer();
     let Me = this;
-    function PromiseThenOnError(Value){
-      if(CallbackErrorValid){
-        try {
-          Inst.resolve(CallbackError(Value));
-        } catch(err){
-          Inst.reject(err);
-        }
-      } Inst.reject(Value);
-    }
     function PromiseThenOnSuccess(Value){
       if(CallbackSuccessValid){
         try {
@@ -88,9 +73,18 @@ class Promise{
         }
       } else Inst.resolve(Value);
     }
+    function PromiseThenOnError(Value){
+      if(CallbackErrorValid){
+        try {
+          Inst.resolve(CallbackError(Value));
+        } catch(err){
+          Inst.reject(err);
+        }
+      } Inst.reject(Value);
+    }
     if(this.State === Promise.State.Pending){
-      this.OnError.push(PromiseThenOnError);
       this.OnSuccess.push(PromiseThenOnSuccess);
+      this.OnError.push(PromiseThenOnError);
     } else {
       setImmediate(function(){
         if(Me.State === Promise.State.Failure){
