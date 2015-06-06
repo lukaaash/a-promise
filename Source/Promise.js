@@ -25,7 +25,7 @@ class Promise{
         throw new TypeError("You can not return self from Resolve");
       }
     }
-    (Value && Value.then || setImmediate)(function(){
+    setImmediate(function(){
       if(Me.State === Promise.State.Pending){
         Me.Result = Value;
         Me.State = Promise.State.Success;
@@ -40,7 +40,7 @@ class Promise{
         throw new TypeError("You can not return self from Reject");
       }
     }
-    (Value && Value.then || setImmediate)(function() {
+    setImmediate(function() {
       if (Me.State === Promise.State.Pending) {
         Me.Result = Value;
         Me.State = Promise.State.Failure;
