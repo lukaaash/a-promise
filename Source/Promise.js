@@ -49,22 +49,34 @@ class Promise{
     let Inst = Promise.defer();
     let Me = this;
     function PromiseThenOnError(Value){
-      if(CallbackErrorValid){
-        try {
-          Inst.resolve(CallbackError(Value));
-        } catch(err){
-          Inst.reject(err);
-        }
-      } Inst.reject(Value);
+      if(Value && Value.constructor && Value.constructor.name === 'Promise'){
+        if(CallbackErrorValid){
+          Value.then(CallbackError).then(Inst.resolve).catch(Inst.reject);
+        } else Value.then(Inst.reject);
+      } else {
+        if(CallbackErrorValid){
+          try {
+            Inst.resolve(CallbackError(Value));
+          } catch(err){
+            Inst.reject(err);
+          }
+        } Inst.reject(Value);
+      }
     }
     function PromiseThenOnSuccess(Value){
-      if(CallbackSuccessValid){
-        try {
-          Inst.resolve(CallbackSuccess(Value));
-        } catch(err){
-          Inst.reject(err);
-        }
-      } else Inst.resolve(Value);
+      if(Value && Value.constructor && Value.constructor.name === 'Promise'){
+        if(CallbackSuccessValid){
+          Value.then(CallbackSuccess).then(Inst.resolve).catch(Inst.reject);
+        } else Value.then(Inst.resolve);
+      } else {
+        if(CallbackSuccessValid){
+          try {
+            Inst.resolve(CallbackSuccess(Value));
+          } catch(err){
+            Inst.reject(err);
+          }
+        } else Inst.resolve(Value);
+      }
     }
     if(this.State === Promise.State.Pending){
       this.OnError.push(PromiseThenOnError);
@@ -83,12 +95,12 @@ class Promise{
   catch(CallbackError){
     Assert(typeof CallbackError === 'function', "Promise.catch expects first parameter to be a function");
     let Inst = Promise.defer();
-    this.OnSuccess = function(Value){
+    this.OnSuccess.push(function(Value){
       Inst.resolve(Value);
-    };
-    this.OnError = function(Value){
+    });
+    this.OnError.push(function(Value){
       Inst.resolve(CallbackError(Value));
-    };
+    });
     return Inst.promise;
   }
   static defer(){
