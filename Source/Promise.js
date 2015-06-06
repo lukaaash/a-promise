@@ -38,7 +38,12 @@ class Promise{
   }
   reject(Value){
     let Me = this;
-    function PromiseCommenceReject() {
+    if(Value && Value.then){
+      if(Value === this){
+        throw new TypeError("You can not return self from Reject");
+      }
+    }
+    (Value && Value.then || setImmediate)(function() {
       if (Me.State === Promise.State.Pending) {
         Me.Result = Value;
         Me.State = Promise.State.Failure;
@@ -48,15 +53,7 @@ class Promise{
           throw new Error("Uncaught Promise Rejection", Value);
         }
       }
-    }
-    if(Value && Value.then){
-      if(Value === this){
-        throw new TypeError("You can not return self from Reject");
-      }
-      Value.then(PromiseCommenceReject);
-    } else {
-      setImmediate(PromiseCommenceReject);
-    }
+    });
   }
   then(CallbackSuccess, CallbackError){
     let CallbackSuccessValid = typeof CallbackSuccess === 'function';
