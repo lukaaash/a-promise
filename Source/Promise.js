@@ -43,13 +43,21 @@ class Promise{
     let Inst = Promise.defer();
     this.OnError = function(Value){
       if(CallbackError){
-        Inst.resolve(CallbackError(Value));
+        try {
+          Inst.resolve(CallbackError(Value));
+        } catch(err){
+          Inst.reject(err);
+        }
       } else {
         Inst.reject(Value);
       }
     };
     this.OnSuccess = function(Value){
-      Inst.resolve(CallbackSuccess(Value));
+      try {
+        Inst.resolve(CallbackSuccess(Value));
+      } catch(err){
+        Inst.reject(err);
+      }
     };
     return Inst.promise;
   }
