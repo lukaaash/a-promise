@@ -3,13 +3,12 @@
 // @Compiler-Output "../Dist/Promise.js"
 // @Compiler-Transpile "true"
 "use strict";
-let Assert = require('assert');
 class Promise{
   constructor(Callback){
     this.OnError = [];
     this.OnSuccess = [];
     this.State = Promise.State.Pending;
-    Assert(typeof Callback === 'function', "The Promise constructor requires a callback function");
+    if(typeof Callback !== 'function') throw new Error("The Promise constructor requires a callback function");
     let Me = this;
     setImmediate(function(){
       try {
@@ -97,7 +96,7 @@ class Promise{
     return Inst.promise;
   }
   catch(CallbackError){
-    Assert(typeof CallbackError === 'function', "Promise.catch expects first parameter to be a function");
+    if(typeof CallbackError !== 'function') throw new Error("Promise.catch expects first parameter to be a function");
     let Inst = Promise.defer();
     let Me = this;
     if(this.State === Promise.State.Pending){
