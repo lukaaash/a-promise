@@ -18,76 +18,69 @@ class Promise{
       }
     });
   }
-  resolve(Value){
-    let Me = this;
-    if(Value && Value.then){
-      if(Value === this){
-        throw new TypeError("You can not return self from Resolve");
-      }
+  onError(Callback){
+    if(this.State === Promise.State.Pending){
+      this.OnError.push(Callback);
+    } else if(this.State === Promise.State.Failure) {
+      Callback(this.Result);
     }
-    setImmediate(function(){
-      if(Me.State === Promise.State.Pending){
-        Me.Result = Value;
-        Me.State = Promise.State.Success;
-        if(Me.OnSuccess.length) Me.OnSuccess.forEach(function(OnSuccess){ OnSuccess(Value) });
-      }
-    });
+  }
+  onSuccess(Callback){
+    if(this.State === Promise.State.Pending){
+      this.OnSuccess.push(Callback);
+    } else if(this.State === Promise.State.Success) {
+      Callback(this.Result);
+    }
+  }
+  resolve(Value){
+    if(Value && Value.then && Value === this){
+      throw new TypeError("You can not return self from Resolve");
+    }
+    if(this.State === Promise.State.Pending){
+      this.Result = Value;
+      this.State = Promise.State.Success;
+      if(this.OnSuccess.length) this.OnSuccess.forEach(function(OnSuccess){ OnSuccess(Value) });
+    }
   }
   reject(Value){
-    let Me = this;
-    if(Value && Value.then){
-      if(Value === this){
-        throw new TypeError("You can not return self from Reject");
+    if(Value && Value.then && Value === this){
+      throw new TypeError("You can not return self from Reject");
+    }
+    if (this.State === Promise.State.Pending) {
+      this.Result = Value;
+      this.State = Promise.State.Failure;
+      if (this.OnError.length) {
+        this.OnError.forEach(function(OnError){ OnError(Value) });
+      } else {
+        console.log(Value.stack);
+        throw new Error("Uncaught Promise Rejection");
       }
     }
-    setImmediate(function() {
-      if (Me.State === Promise.State.Pending) {
-        Me.Result = Value;
-        Me.State = Promise.State.Failure;
-        if (Me.OnError.length) {
-          Me.OnError.forEach(function(OnError){ OnError(Value) });
-        } else {
-          throw new Error("Uncaught Promise Rejection", Value);
-        }
-      }
-    });
   }
   then(CallbackSuccess, CallbackError){
     let CallbackSuccessValid = typeof CallbackSuccess === 'function';
     let CallbackErrorValid = typeof CallbackError === 'function';
-    let Inst = Promise.defer();
     let Me = this;
-    function PromiseThenOnSuccess(Value){
-      if(CallbackSuccessValid){
-        try {
-          Inst.resolve(CallbackSuccess(Value));
-        } catch(err){
-          Inst.reject(err);
-        }
-      } else Inst.resolve(Value);
-    }
-    function PromiseThenOnError(Value){
-      if(CallbackErrorValid){
-        try {
-          Inst.resolve(CallbackError(Value));
-        } catch(err){
-          Inst.reject(err);
-        }
-      } Inst.reject(Value);
-    }
-    if(this.State === Promise.State.Pending){
-      this.OnSuccess.push(PromiseThenOnSuccess);
-      this.OnError.push(PromiseThenOnError);
-    } else {
-      setImmediate(function(){
-        if(Me.State === Promise.State.Failure){
-          PromiseThenOnError(Me.Result);
-        } else if(Me.State === Promise.State.Success){
-          PromiseThenOnSuccess(Me.Result);
-        }
+    return new Promise(function(Resolve, Reject){
+      Me.onSuccess(function(Value){
+        if(CallbackSuccessValid){
+          try {
+            Resolve(CallbackSuccess(Value));
+          } catch(err){
+            Reject(err)
+          }
+        } else Resolve(Value)
       });
-    }
-    return Inst.promise;
+      Me.onError(function(Value){
+        if(CallbackErrorValid){
+          try {
+            Resolve(CallbackError(Value));
+          } catch(err){
+            Reject(err);
+          }
+        } else Reject(Value);
+      });
+    });
   }
   catch(CallbackError){
     if(typeof CallbackError !== 'function') throw new Error("Promise.catch expects first parameter to be a function");
