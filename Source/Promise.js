@@ -21,18 +21,25 @@ class Promise{
   }
   resolve(Value){
     let Me = this;
-    this.Result = Value;
-    setImmediate(function(){
+    function PromiseCommenceResolve(){
       if(Me.State === Promise.State.Pending){
         Me.State = Promise.State.Success;
         if(Me.OnSuccess.length) Me.OnSuccess.forEach(function(OnSuccess){ OnSuccess(Value) });
       }
-    });
+    }
+    if(Value && Value.constructor && Value.constructor.name === 'Promise'){
+      Value.then(function(Value){
+        Me.Result = Value;
+        PromiseCommenceResolve(Value);
+      });
+    } else {
+      Me.Result  = Value;
+      setImmediate(PromiseCommenceResolve);
+    }
   }
   reject(Value){
     let Me = this;
-    this.Result = Value;
-    setImmediate(function() {
+    function PromiseCommenceReject() {
       if (Me.State === Promise.State.Pending) {
         Me.State = Promise.State.Failure;
         if (Me.OnError.length) {
@@ -41,7 +48,16 @@ class Promise{
           throw new Error("Uncaught Promise Rejection", Value);
         }
       }
-    });
+    }
+    if(Value && Value.constructor && Value.constructor.name === 'Promise'){
+      Value.then(function(Value){
+        Me.Result = Value;
+        PromiseCommenceReject(Value);
+      });
+    } else {
+      Me.Result  = Value;
+      setImmediate(PromiseCommenceReject);
+    }
   }
   then(CallbackSuccess, CallbackError){
     let CallbackSuccessValid = typeof CallbackSuccess === 'function';
@@ -49,34 +65,22 @@ class Promise{
     let Inst = Promise.defer();
     let Me = this;
     function PromiseThenOnError(Value){
-      if(Value && Value.constructor && Value.constructor.name === 'Promise'){
-        if(CallbackErrorValid){
-          Value.then(CallbackError).then(Inst.resolve).catch(Inst.reject);
-        } else Value.then(Inst.reject);
-      } else {
-        if(CallbackErrorValid){
-          try {
-            Inst.resolve(CallbackError(Value));
-          } catch(err){
-            Inst.reject(err);
-          }
-        } Inst.reject(Value);
-      }
+      if(CallbackErrorValid){
+        try {
+          Inst.resolve(CallbackError(Value));
+        } catch(err){
+          Inst.reject(err);
+        }
+      } Inst.reject(Value);
     }
     function PromiseThenOnSuccess(Value){
-      if(Value && Value.constructor && Value.constructor.name === 'Promise'){
-        if(CallbackSuccessValid){
-          Value.then(CallbackSuccess).then(Inst.resolve).catch(Inst.reject);
-        } else Value.then(Inst.resolve);
-      } else {
-        if(CallbackSuccessValid){
-          try {
-            Inst.resolve(CallbackSuccess(Value));
-          } catch(err){
-            Inst.reject(err);
-          }
-        } else Inst.resolve(Value);
-      }
+      if(CallbackSuccessValid){
+        try {
+          Inst.resolve(CallbackSuccess(Value));
+        } catch(err){
+          Inst.reject(err);
+        }
+      } else Inst.resolve(Value);
     }
     if(this.State === Promise.State.Pending){
       this.OnError.push(PromiseThenOnError);
