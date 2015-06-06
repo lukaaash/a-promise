@@ -28,7 +28,7 @@ class Promise{
         if(Me.OnSuccess.length) Me.OnSuccess.forEach(function(OnSuccess){ OnSuccess(Value) });
       }
     }
-    if(Value && Value.constructor && Value.constructor.name === 'Promise'){
+    if(Value && Value.then){
       if(Value === this){
         throw new TypeError("You can not return self from Resolve");
       }
@@ -50,7 +50,7 @@ class Promise{
         }
       }
     }
-    if(Value && Value.constructor && Value.constructor.name === 'Promise'){
+    if(Value && Value.then){
       if(Value === this){
         throw new TypeError("You can not return self from Reject");
       }
