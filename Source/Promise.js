@@ -5,8 +5,8 @@
 "use strict";
 class Promise{
   constructor(Callback){
-    this.OnError = [];
-    this.OnSuccess = [];
+    this.OnError = null;
+    this.OnSuccess = null;
     this.State = Promise.State.Pending;
     if(typeof Callback !== 'function') throw new Error("The Promise constructor requires a callback function");
     let Me = this;
@@ -20,14 +20,14 @@ class Promise{
   }
   onError(Callback){
     if(this.State === Promise.State.Pending){
-      this.OnError.push(Callback);
+      this.OnError = Callback;
     } else if(this.State === Promise.State.Failure) {
       Callback(this.Result);
     }
   }
   onSuccess(Callback){
     if(this.State === Promise.State.Pending){
-      this.OnSuccess.push(Callback);
+      this.OnSuccess = Callback;
     } else if(this.State === Promise.State.Success) {
       Callback(this.Result);
     }
@@ -39,7 +39,7 @@ class Promise{
     if(this.State === Promise.State.Pending){
       this.Result = Value;
       this.State = Promise.State.Success;
-      if(this.OnSuccess.length) this.OnSuccess.forEach(function(OnSuccess){ OnSuccess(Value) });
+      if(this.OnSuccess) this.OnSuccess(Value);
     }
   }
   reject(Value){
@@ -49,8 +49,8 @@ class Promise{
     if (this.State === Promise.State.Pending) {
       this.Result = Value;
       this.State = Promise.State.Failure;
-      if (this.OnError.length) {
-        this.OnError.forEach(function(OnError){ OnError(Value) });
+      if (this.OnError) {
+        this.OnError(Value);
       } else {
         console.log(Value.stack);
         throw new Error("Uncaught Promise Rejection");
@@ -83,7 +83,7 @@ class Promise{
   catch(CallbackError){
     if(typeof CallbackError !== 'function') throw new Error("Promise.catch expects first parameter to be a function");
     let Me = this;
-    return new Promise(function(Resolve, Reject){
+    return new Promise(function(Resolve){
       Me.onSuccess(Resolve);
       Me.onError(function(Value){
         Resolve(CallbackError(Value));
