@@ -58,12 +58,10 @@ class Promise{
     }
   }
   then(CallbackSuccess, CallbackError){
-    let CallbackSuccessValid = typeof CallbackSuccess === 'function';
-    let CallbackErrorValid = typeof CallbackError === 'function';
     let Me = this;
     return new Promise(function(Resolve, Reject){
       Me.onSuccess(function(Value){
-        if(CallbackSuccessValid){
+        if(typeof CallbackSuccess === 'function'){
           try {
             Resolve(CallbackSuccess(Value));
           } catch(err){
@@ -72,7 +70,7 @@ class Promise{
         } else Resolve(Value)
       });
       Me.onError(function(Value){
-        if(CallbackErrorValid){
+        if(typeof CallbackError === 'function'){
           try {
             Resolve(CallbackError(Value));
           } catch(err){
