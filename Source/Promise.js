@@ -4,32 +4,27 @@
 // @Compiler-Transpile "true"
 "use strict";
 class Promise{
-  constructor(Callback){
+  constructor(Callback, Ignore, ResolutionResult, ErrorResult){
+    Ignore = Boolean(Ignore);
     this.OnError = null;
     this.OnSuccess = null;
-    this.State = Promise.State.Pending;
-    if(typeof Callback !== 'function') throw new Error("The Promise constructor requires a callback function");
-    let Me = this;
-    setImmediate(function(){
-      try {
-        Callback(Me.resolve.bind(Me), Me.reject.bind(Me));
-      } catch(err){
-        Me.reject(err);
-      }
-    });
-  }
-  onError(Callback){
-    if(this.State === Promise.State.Pending){
-      this.OnError = Callback;
-    } else if(this.State === Promise.State.Failure) {
-      Callback(this.Result);
-    }
-  }
-  onSuccess(Callback){
-    if(this.State === Promise.State.Pending){
-      this.OnSuccess = Callback;
-    } else if(this.State === Promise.State.Success) {
-      Callback(this.Result);
+    if(!Ignore && typeof Callback !== 'function') throw new Error("The Promise constructor requires a callback function");
+    if(ResolutionResult){
+      this.State = Promise.State.Success;
+      this.Result = ResolutionResult;
+    } else if(ErrorResult){
+      this.State = Promise.State.Failure;
+      this.Result = ErrorResult;
+    } else {
+      this.State = Promise.State.Pending;
+      let Me = this;
+      setTimeout(function(){
+        try {
+          Callback(function(Result){ Me.resolve(Result) }, function(Result){ Me.reject(Result) });
+        } catch(err){
+          Me.reject(err);
+        }
+      }, 0);
     }
   }
   resolve(Value){
@@ -58,7 +53,7 @@ class Promise{
     }
   }
   then(CallbackSuccess, CallbackError){
-    let Inst = new Promise(function(){});
+    let Inst = new Promise(null, true);
     this.OnSuccess = function(Value){
       if(typeof CallbackSuccess === 'function'){
         try {
@@ -81,7 +76,7 @@ class Promise{
   }
   catch(CallbackError){
     if(typeof CallbackError !== 'function') throw new Error("Promise.catch expects first parameter to be a function");
-    let Inst = new Promise(function(){});
+    let Inst = new Promise(null, true);
     this.OnSuccess = function(Value){
       Inst.resolve(Value)
     };
@@ -91,7 +86,7 @@ class Promise{
     return Inst;
   }
   static defer(){
-    let Inst = new Promise(function(){});
+    let Inst = new Promise(null, true);
     return {
       promise: Inst,
       reject: function(Value){
@@ -103,14 +98,10 @@ class Promise{
     };
   }
   static resolve(Value){
-    return new Promise(function(Resolve){
-      Resolve(Value);
-    });
+    return new Promise(null, true, Value);
   }
   static reject(Value){
-    return new Promise(function(_, Reject){
-      Reject(Value);
-    });
+    return new Promise(null, true, null, Value);
   }
 }
 Promise.State = {Pending: 0, Success: 1, Failure: 2};
