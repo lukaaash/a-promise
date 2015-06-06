@@ -81,13 +81,14 @@ class Promise{
   }
   catch(CallbackError){
     if(typeof CallbackError !== 'function') throw new Error("Promise.catch expects first parameter to be a function");
-    let Me = this;
-    return new Promise(function(Resolve){
-      Me.onSuccess(Resolve);
-      Me.onError(function(Value){
-        Resolve(CallbackError(Value));
-      });
-    });
+    let Inst = new Promise(function(){});
+    this.OnSuccess = function(Value){
+      Inst.resolve(Value)
+    };
+    this.OnError = function(Value){
+      Inst.resolve(CallbackError(Value))
+    };
+    return Inst;
   }
   static defer(){
     let Inst = new Promise(function(){});
