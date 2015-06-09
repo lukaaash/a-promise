@@ -52,9 +52,21 @@ class Promise{
       }
     }
   }
+  onSuccess(Callback){
+    if(this.State === Promise.State.Pending)
+      this.OnSuccess = Callback;
+    else if(this.State === Promise.State.Success)
+      Callback(this.Result);
+  }
+  onError(Callback){
+    if(this.State === Promise.State.Pending)
+      this.OnSuccess = Callback;
+    else if(this.State === Promise.State.Failure)
+      Callback(this.Result);
+  }
   then(CallbackSuccess, CallbackError){
     let Inst = new Promise(null, true);
-    this.OnSuccess = function(Value){
+    this.onSuccess(function(Value){
       if(typeof CallbackSuccess === 'function'){
         try {
           Inst.resolve(CallbackSuccess(Value));
@@ -62,8 +74,8 @@ class Promise{
           Inst.reject(err)
         }
       } else Inst.resolve(Value)
-    };
-    this.OnError = function(Value){
+    });
+    this.onError(function(Value){
       if(typeof CallbackError === 'function'){
         try {
           Inst.resolve(CallbackError(Value));
@@ -71,7 +83,7 @@ class Promise{
           Inst.reject(err);
         }
       } else Inst.reject(Value);
-    };
+    });
     return Inst;
   }
   catch(CallbackError){
