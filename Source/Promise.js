@@ -92,8 +92,26 @@ class Promise{
       reject: function(Value){ Instance.reject(Value) }
     }
   }
-  static all(){
-
+  static all(Iterable){
+    if(typeof Iterable === 'undefined') throw new Error("Promise.all expects parameter one to be an iterable")
+    let Instance = new Promise(null, true)
+    let Promises = []
+    let ToReturn = []
+    let Number = 0
+    for(var Index in Iterable){
+      let Val = Iterable[Index]
+      if(Val && Val.then) Promises[Number] = Val
+      else ToReturn[Number] = Val
+      ++Number
+    }
+    if(Number === ToReturn.length) Instance.resolve(ToReturn)
+    Promises.forEach(function(Value, Index){
+      Value.then(function(TheVal){
+        ToReturn[Index] = TheVal
+        if(Number === ToReturn.length) Instance.resolve(ToReturn)
+      });
+    })
+    return Instance
   }
   static resolve(Value){
     let Instance = new Promise(null, true)
