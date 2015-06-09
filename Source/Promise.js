@@ -32,9 +32,17 @@ class Promise{
       throw new TypeError("You can not return self from Resolve");
     }
     if(this.State === Promise.State.Pending){
-      this.Result = Value;
       this.State = Promise.State.Success;
-      if(this.OnSuccess) this.OnSuccess(Value);
+      if(Value && Value.then){
+        let Me = this;
+        Value.then(function(Value){
+          Me.Result = Value;
+          if(Me.OnSuccess) Me.OnSuccess(Value);
+        });
+      } else {
+        this.Result = Value;
+        if(this.OnSuccess) this.OnSuccess(Value);
+      }
     }
   }
   reject(Value){
@@ -42,13 +50,26 @@ class Promise{
       throw new TypeError("You can not return self from Reject");
     }
     if (this.State === Promise.State.Pending) {
-      this.Result = Value;
       this.State = Promise.State.Failure;
-      if (this.OnError) {
-        this.OnError(Value);
+      if(Value && Value.then){
+        let Me = this;
+        Value.then(function(Value){
+          Me.Result = Value;
+          if (Me.OnError) {
+            Me.OnError(Value);
+          } else {
+            console.error(Value.stack);
+            throw new Error("Uncaught Promise Rejection");
+          }
+        });
       } else {
-        console.log(Value.stack);
-        throw new Error("Uncaught Promise Rejection");
+        this.Result = Value;
+        if (this.OnError) {
+          this.OnError(Value);
+        } else {
+          console.error(Value.stack);
+          throw new Error("Uncaught Promise Rejection");
+        }
       }
     }
   }
