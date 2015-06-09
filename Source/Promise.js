@@ -2,7 +2,7 @@
 
 // @Compiler-Output "../Dist/Promise.js"
 // @Compiler-Transpile "true"
-"use strict";
+"use strict"
 // State:Pending = 0
 // State:Success = 1
 // State:Failure = 2
@@ -13,7 +13,7 @@ class Promise{
     this.OnSuccess = []
     this.Result = null
     if(!Skip){
-      let Me = this;
+      let Me = this
       setTimeout(function(){
         Callback(function(Result){Me.resolve(Result)}, function(Result){Me.reject(Result)})
       }, 0)
@@ -61,8 +61,31 @@ class Promise{
       }
     }
   }
+  then(CallbackS, CallbackE){
+    let Instance = new Promise(null, true)
+    this.onSuccess(function(Value){
+      if(typeof CallbackS === 'function') Instance.resolve(CallbackS(Value))
+      else Instance.resolve(Value)
+    })
+    this.onError(function(Value){
+      if(typeof CallbackE === 'function') Instance.resolve(CallbackE(Value))
+      else Instance.reject(Value)
+    })
+    return Instance
+  }
+  catch(CallbackE){
+    let Instance = new Promise(null, true)
+    this.onSuccess(function(Value){
+      Instance.resolve(Value)
+    })
+    this.onError(function(Value){
+      if(typeof CallbackE === 'function') Instance.resolve(CallbackE(Value))
+      else Instance.reject(Value)
+    })
+    return Instance
+  }
   static defer(){
-    let Instance = new Promise(null, true);
+    let Instance = new Promise(null, true)
     return {
       promise: Instance,
       resolve: function(Value){ Instance.resolve(Value) },
@@ -73,17 +96,17 @@ class Promise{
 
   }
   static resolve(Value){
-    let Instance = new Promise(null, true);
-    Instance.State = 1;
-    Instance.Result = Value;
-    return Instance;
+    let Instance = new Promise(null, true)
+    Instance.State = 1
+    Instance.Result = Value
+    return Instance
   }
   static reject(Value){
-    let Instance = new Promise(null, true);
-    Instance.State = 2;
-    Instance.Result = Value;
-    return Instance;
+    let Instance = new Promise(null, true)
+    Instance.State = 2
+    Instance.Result = Value
+    return Instance
   }
 }
 
-module.exports = Promise;
+module.exports = Promise
