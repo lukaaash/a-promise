@@ -9,7 +9,7 @@ class Promise{
     this.OnError = null;
     this.OnSuccess = null;
     if(!Ignore && typeof Callback !== 'function') throw new Error("The Promise constructor requires a callback function");
-    if(ResolutionResult){
+    if(Ignore) {} else if(ResolutionResult){
       this.State = Promise.State.Success;
       this.Result = ResolutionResult;
     } else if(ErrorResult){
@@ -58,7 +58,6 @@ class Promise{
           if (Me.OnError) {
             Me.OnError(Value);
           } else {
-            console.error(Value.stack);
             throw new Error("Uncaught Promise Rejection");
           }
         });
@@ -67,7 +66,6 @@ class Promise{
         if (this.OnError) {
           this.OnError(Value);
         } else {
-          console.error(Value.stack);
           throw new Error("Uncaught Promise Rejection");
         }
       }
