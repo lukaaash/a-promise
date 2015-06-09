@@ -85,3 +85,5 @@ class Promise{
     return Instance;
   }
 }
+
+module.exports = Promise;
