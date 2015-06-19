@@ -9,8 +9,8 @@
 class Promise{
   constructor(Callback, Skip){
     this.State = 0
-    this.OnError = []
-    this.OnSuccess = []
+    this.OnError = null
+    this.OnSuccess = null
     this.Result = null
     if(!Skip){
       let Me = this
@@ -20,14 +20,18 @@ class Promise{
     }
   }
   onError(Callback){
-    if(this.State === 0)
+    if(this.State === 0){
+      this.OnError = this.OnError || []
       this.OnError.push(Callback)
+    }
     else if(this.State === 2)
       Callback(this.Result)
   }
   onSuccess(Callback){
-    if(this.State === 0)
+    if(this.State === 0){
+      this.OnSuccess = this.OnSuccess || []
       this.OnSuccess.push(Callback)
+    }
     else if(this.State === 1)
       Callback(this.Result)
   }
@@ -36,10 +40,7 @@ class Promise{
       this.State = 1
       if(Value && Value.then){
         let Me = this
-        Value.then(function(Value){
-          Me.Result = Value
-          Me.OnSuccess.forEach(function(OnSuccess){ OnSuccess(Value) })
-        })
+        Value.then(function(Value){ Me.resolve(Value) })
       } else {
         this.Result = Value
         this.OnSuccess.forEach(function(OnSuccess){ OnSuccess(Value) })
@@ -51,10 +52,7 @@ class Promise{
       this.State = 2
       if(Value && Value.then){
         let Me = this
-        Value.then(function(Value){
-          Me.Result = Value
-          Me.OnError.forEach(function(OnSuccess){ OnSuccess(Value) })
-        })
+        Value.then(function(Value){ Me.reject(Value) })
       } else {
         this.Result = Value
         this.OnError.forEach(function(OnSuccess){ OnSuccess(Value) })
