@@ -40,10 +40,10 @@ class Promise{
       if(Value && Value.then){
         Value.then(function(Value){ Me.resolve(Value) })
       } else {
-        process.nextTick(function(){
+        setTimeout(function(){
           Me.Result = Value
           if(Me.OnSuccess) Me.OnSuccess.forEach(function(OnSuccess){ OnSuccess(Value) })
-        })
+        }, 0)
       }
     }
   }
@@ -54,10 +54,10 @@ class Promise{
       if(Value && Value.then){
         Value.then(function(Value){ Me.reject(Value) })
       } else {
-        process.nextTick(function(){
+        setTimeout(function(){
           Me.Result = Value
           if(Me.OnError) Me.OnError.forEach(function(OnSuccess){ OnSuccess(Value) })
-        })
+        }, 0)
       }
     }
   }
