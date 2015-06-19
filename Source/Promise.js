@@ -14,9 +14,7 @@ class Promise{
     this.Result = null
     if(!Skip){
       let Me = this
-      setTimeout(function(){
-        Callback(function(Result){Me.resolve(Result)}, function(Result){Me.reject(Result)})
-      }, 0)
+      Callback(function(Result){Me.resolve(Result)}, function(Result){Me.reject(Result)})
     }
   }
   onError(Callback){
@@ -43,7 +41,7 @@ class Promise{
         Value.then(function(Value){ Me.resolve(Value) })
       } else {
         this.Result = Value
-        this.OnSuccess.forEach(function(OnSuccess){ OnSuccess(Value) })
+        if(this.OnSuccess) this.OnSuccess.forEach(function(OnSuccess){ OnSuccess(Value) })
       }
     }
   }
@@ -55,7 +53,7 @@ class Promise{
         Value.then(function(Value){ Me.reject(Value) })
       } else {
         this.Result = Value
-        this.OnError.forEach(function(OnSuccess){ OnSuccess(Value) })
+        if(this.OnError) this.OnError.forEach(function(OnSuccess){ OnSuccess(Value) })
       }
     }
   }
