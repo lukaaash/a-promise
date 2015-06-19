@@ -72,12 +72,20 @@ class Promise{
   then(CallbackS, CallbackE){
     let Instance = new Promise(null, true)
     this.onSuccess(function(Value){
-      if(typeof CallbackS === 'function') Instance.resolve(CallbackS(Value))
-      else Instance.resolve(Value)
+      try {
+        if(typeof CallbackS === 'function') Instance.resolve(CallbackS(Value))
+        else Instance.resolve(Value)
+      } catch(err){
+        Instance.reject(err)
+      }
     })
     this.onError(function(Value){
-      if(typeof CallbackE === 'function') Instance.resolve(CallbackE(Value))
-      else Instance.reject(Value)
+      try {
+        if(typeof CallbackE === 'function') Instance.resolve(CallbackE(Value))
+        else Instance.reject(Value)
+      } catch(err){
+        Instance.reject(err)
+      }
     })
     return Instance
   }
@@ -87,13 +95,17 @@ class Promise{
       Instance.resolve(Value)
     })
     this.onError(function(Value){
-      if(typeof CallbackE === 'function') Instance.resolve(CallbackE(Value))
-      else Instance.reject(Value)
+      try {
+        if(typeof CallbackE === 'function') Instance.resolve(CallbackE(Value))
+        else Instance.reject(Value)
+      } catch(err){
+        Instance.reject(err)
+      }
     })
     return Instance
   }
   static all(Iterable){
-    if(typeof Iterable === 'undefined') throw new Error("Promise.all expects parameter one to be an iterable")
+    if(typeof Iterable === 'undefined') throw new Error("Promise.all expects parameter one to be an iteratable")
     let Instance = new Promise(null, true)
     let Promises = []
     let ToReturn = []
@@ -105,7 +117,7 @@ class Promise{
       ++Number
     }
     if(Number === ToReturn.length) Instance.resolve(ToReturn)
-    Promises.forEach(function(Value, Index){
+    else Promises.forEach(function(Value, Index){
       Value.then(function(TheVal){
         ToReturn[Index] = TheVal
         if(Number === ToReturn.length) Instance.resolve(ToReturn)
