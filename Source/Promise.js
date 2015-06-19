@@ -36,24 +36,28 @@ class Promise{
   resolve(Value){
     if(this.State === 0){
       this.State = 1
+      let Me = this
       if(Value && Value.then){
-        let Me = this
         Value.then(function(Value){ Me.resolve(Value) })
       } else {
-        this.Result = Value
-        if(this.OnSuccess) this.OnSuccess.forEach(function(OnSuccess){ OnSuccess(Value) })
+        process.nextTick(function(){
+          Me.Result = Value
+          if(Me.OnSuccess) Me.OnSuccess.forEach(function(OnSuccess){ OnSuccess(Value) })
+        })
       }
     }
   }
   reject(Value){
     if(this.State === 0){
       this.State = 2
+      let Me = this
       if(Value && Value.then){
-        let Me = this
         Value.then(function(Value){ Me.reject(Value) })
       } else {
-        this.Result = Value
-        if(this.OnError) this.OnError.forEach(function(OnSuccess){ OnSuccess(Value) })
+        process.nextTick(function(){
+          Me.Result = Value
+          if(Me.OnError) Me.OnError.forEach(function(OnSuccess){ OnSuccess(Value) })
+        })
       }
     }
   }
