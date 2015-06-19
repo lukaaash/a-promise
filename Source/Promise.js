@@ -43,6 +43,9 @@ class Promise{
   }
   resolve(Value){
     if(this.State === 0){
+      if(Value === this){
+        return this.reject(new TypeError("Can't resolve with self"))
+      }
       this.State = 1
       let Me = this
       if(Value && Value.then){
@@ -57,6 +60,9 @@ class Promise{
   }
   reject(Value){
     if(this.State === 0){
+      if(Value === this){
+        return this.reject(new TypeError("Can't resolve with self"))
+      }
       this.State = 2
       let Me = this
       if(Value && Value.then){
