@@ -22,16 +22,24 @@ class Promise{
       this.OnError = this.OnError || []
       this.OnError.push(Callback)
     }
-    else if(this.State === 2)
-      Callback(this.Result)
+    else if(this.State === 2){
+      let Me = this
+      setTimeout(function(){
+        Callback(Me.Result)
+      }, 0)
+    }
   }
   onSuccess(Callback){
     if(this.State === 0){
       this.OnSuccess = this.OnSuccess || []
       this.OnSuccess.push(Callback)
     }
-    else if(this.State === 1)
-      Callback(this.Result)
+    else if(this.State === 1){
+      let Me = this
+      setTimeout(function(){
+        Callback(Me.Result)
+      }, 0)
+    }
   }
   resolve(Value){
     if(this.State === 0){
