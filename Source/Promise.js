@@ -84,14 +84,6 @@ class Promise{
     })
     return Instance
   }
-  static defer(){
-    let Instance = new Promise(null, true)
-    return {
-      promise: Instance,
-      resolve: function(Value){ Instance.resolve(Value) },
-      reject: function(Value){ Instance.reject(Value) }
-    }
-  }
   static all(Iterable){
     if(typeof Iterable === 'undefined') throw new Error("Promise.all expects parameter one to be an iterable")
     let Instance = new Promise(null, true)
@@ -112,6 +104,14 @@ class Promise{
       });
     })
     return Instance
+  }
+  static defer(){
+    let Instance = new Promise(null, true)
+    return {
+      promise: Instance,
+      resolve: function(Value){ Instance.resolve(Value) },
+      reject: function(Value){ Instance.reject(Value) }
+    }
   }
   static resolve(Value){
     let Instance = new Promise(null, true)
