@@ -12,9 +12,20 @@ class Promise{
     this.OnError = null
     this.OnSuccess = null
     this.Result = null
+    this.Finished = false
     if(!Skip){
       let Me = this
-      Callback(function(Result){Me.resolve(Result)}, function(Result){Me.reject(Result)})
+      Callback(function(Result){
+          if(!Me.Finished){
+              Me.Finished = true
+              Me.resolve(Result)
+          }
+      }, function(Result){
+          if(!Me.Finished){
+              Me.Finished = true
+              Me.reject(Result)
+          }
+      })
     }
   }
   onError(Callback){
@@ -46,13 +57,14 @@ class Promise{
       if(Value === this){
         return this.reject(new TypeError("Can't resolve with self"))
       }
-      this.State = 1
       let Me = this
       if(Value && Value.then){
-        Value.then(function(Value){ Me.resolve(Value) })
+        let Instance = Value.then(function(Value){ return Value })
+        Instance.then(function(Value){ Me.resolve(Value) }, function(Value){ Me.reject(Value) })
       } else {
+        this.State = 1
+        this.Result = Value
         setTimeout(function(){
-          Me.Result = Value
           if(Me.OnSuccess) Me.OnSuccess.forEach(function(OnSuccess){ OnSuccess(Value) })
         }, 0)
       }
@@ -63,13 +75,14 @@ class Promise{
       if(Value === this){
         return this.reject(new TypeError("Can't resolve with self"))
       }
-      this.State = 2
       let Me = this
       if(Value && Value.then){
-        Value.then(function(Value){ Me.reject(Value) })
+        let Instance = Value.then(function(Value){ return Value })
+        Instance.then(function(Value){ Me.resolve(Value) }, function(Value){ Me.reject(Value) })
       } else {
+        this.State = 2
+        this.Result = Value
         setTimeout(function(){
-          Me.Result = Value
           if(Me.OnError) Me.OnError.forEach(function(OnSuccess){ OnSuccess(Value) })
         }, 0)
       }
