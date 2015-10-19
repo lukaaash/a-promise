@@ -14,6 +14,7 @@ class Promise{
     this.Result = null
     this.Finished = false
     if(!Skip){
+      if (typeof Callback !== "function") throw new TypeError("Promise resolver " + Callback + " is not a function")
       let Me = this
       Callback(function(Result){
           if(!Me.Finished){
